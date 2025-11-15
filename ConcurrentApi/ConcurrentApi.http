@@ -1,0 +1,12 @@
+@ConcurrentApi_HostAddress = http://localhost:5114
+
+GET {{ConcurrentApi_HostAddress}}/WeatherForecast/2025/11/11
+Accept: application/json
+
+###
+
+GET {{ConcurrentApi_HostAddress}}/SafeWeather/2025/11/11
+Accept: application/json
+
+###
+

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.66" />
+		<PackageReference Include="Aspire.MySqlConnector" Version="13.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ConcurrentDemo.ServiceDefaults\ConcurrentDemo.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\Weather.App\Weather.App.csproj" />
+	</ItemGroup>
+
+</Project>

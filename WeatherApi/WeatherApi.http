@@ -1,0 +1,11 @@
+@WeatherApi_HostAddress = http://localhost:5130
+
+GET {{WeatherApi_HostAddress}}/WeatherForecast/2025/11/11
+Accept: application/json
+
+###
+
+PUT {{WeatherApi_HostAddress}}/WeatherForecast/2025/11/11
+Accept: application/json
+
+###
