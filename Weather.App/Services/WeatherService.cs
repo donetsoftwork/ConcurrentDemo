@@ -11,15 +11,20 @@ public class WeatherService(DbDataSource dataSource)
     /// <inheritdoc />
     public async Task<WeatherForecast?> GetWeather(int year, int month, int day, CancellationToken token = default)
     {
+        var date = new DateTime(year, month, day);
+        using var connection = await _dataSource.OpenConnectionAsync(token);
+        return await GetWeather(connection, date, token);
+    }
+    /// <inheritdoc />
+    public Task<WeatherForecast?> GetWeather(DbConnection connection, DateTime date, CancellationToken token = default)
+    {
         const string sql = """
                 SELECT `Date`, `TemperatureC`, `Summary`
                 FROM `weathers`
                 WHERE `Date`=@date
                 """;
-        var date = new DateTime(year, month, day);
         var command = new CommandDefinition(sql, parameters: new { date }, cancellationToken: token);
-        using var connection = _dataSource.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<WeatherForecast>(command);
+        return connection.QueryFirstOrDefaultAsync<WeatherForecast>(command);
     }
     /// <summary>
     /// 生成天气数据
@@ -50,7 +55,7 @@ public class WeatherService(DbDataSource dataSource)
                 VALUES(@Date, @TemperatureC, @Summary)
                 """;
         var command = new CommandDefinition(sql, parameters: weather, cancellationToken: token);
-        using var connection = _dataSource.CreateConnection();
+        using var connection = await _dataSource.OpenConnectionAsync(token);
         await connection.ExecuteAsync(command);
     }
     #region CreateRandomWeather

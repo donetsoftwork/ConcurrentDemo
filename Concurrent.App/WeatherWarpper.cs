@@ -1,5 +1,6 @@
 using Hand.Tasks;
 using Hand.Tasks.Internal;
+using System.Data.Common;
 using Weather.Models;
 using Weather.Services;
 
@@ -9,13 +10,11 @@ namespace Concurrent;
 /// 异步结果
 /// </summary>
 /// <param name="original"></param>
-public class WeatherWarpper(int year, int month, int day, DateTime expireTime, CancellationToken token)
+public class WeatherWarpper(DateTime date, DateTime expireTime, CancellationToken token)
     : TaskCallBack<WeatherForecast?>, ITaskJobResult<WeatherForecast?>
 {
     #region 配置
-    private readonly int _year = year;
-    private readonly int _month = month;
-    private readonly int _day = day;
+    private readonly DateTime _date = date;
     private readonly DateTime _expireTime = expireTime;
     private readonly CancellationToken _token = token;
 
@@ -29,7 +28,7 @@ public class WeatherWarpper(int year, int month, int day, DateTime expireTime, C
     /// <param name="service"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public async Task GetWeather(IWeatherService service, CancellationToken token)
+    public async Task GetWeather(DbConnection connection, IWeatherService service, CancellationToken token)
     {
         if (token.IsCancellationRequested || _token.IsCancellationRequested || _expireTime < DateTime.Now)
         {
@@ -37,7 +36,7 @@ public class WeatherWarpper(int year, int month, int day, DateTime expireTime, C
             return;
         }
         var linked = CancellationTokenSource.CreateLinkedTokenSource(_token, token);
-        var weather = await service.GetWeather(_year, _month, _day, linked.Token);
+        var weather = await service.GetWeather(connection, _date, linked.Token);
         OnSuccess(weather);
     }
 }

@@ -7,10 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.66" />
-		<PackageReference Include="Hand.Job" Version="0.2.0-alpha" />
-		<PackageReference Include="Aspire.MySqlConnector" Version="13.0.0" />
-		<PackageReference Include="Hand.Tasks" Version="0.2.0-alpha" />
+		<PackageReference Include="Dapper" Version="2.1.89" />
+		<PackageReference Include="Hand.Job" Version="0.3.2.1-alpha" />
+		<PackageReference Include="Aspire.MySqlConnector" Version="13.6.5" />
+		<PackageReference Include="Hand.Tasks" Version="0.3.2.1-alpha" />
 	</ItemGroup>
 
 	<ItemGroup>

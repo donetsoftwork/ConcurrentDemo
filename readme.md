@@ -18,13 +18,14 @@
 ## 二、环境准备
 >* 开启Windows的Hyper-V组件
 >* 安装Docker Desktop
+>* 本地调试 dotnet dev-certs https --trust
 >* 下载Jmeter(用于压力测试,解压即可用)
 
 ## 三、Aspire快速开发云应用
-### 1. 微软经典天气预报经典案例
+### 1. 微软天气预报经典案例
 >* 建一个WeatherApi的webapi项目
 >* 按年月日获取当天的天气
->* IWeatherService用来读取和保存天气数据
+>* IWeatherService用来读取天气数据
 >* 为了更真实我们用MySql数据库来存储
 
 ~~~csharp
@@ -72,6 +73,10 @@ public interface IWeatherService
 ### 2. 用Dapper实现IWeatherService
 >* Dapper的CommandDefinition可以封装CancellationToken
 >* CancellationToken对及时取消数据库超时有作用
+>* 特别注意这里我们用DbDataSource而不是DbConnection
+>* DbConnection是会话级别的,依赖DbConnection的对象也必须是会话级别的
+>* DbDataSource则做为单例完全没有问题
+>* 线程池必须是单例的,所以我们这里不能依赖DbConnection
 
 ~~~csharp
 public class WeatherService(DbDataSource dataSource)
@@ -88,7 +93,7 @@ public class WeatherService(DbDataSource dataSource)
                 """;
         var date = new DateTime(year, month, day);
         var command = new CommandDefinition(sql, parameters: new { date }, cancellationToken: token);
-        using var connection = _dataSource.CreateConnection();
+        using var connection = await _dataSource.OpenConnectionAsync(token);
         return await connection.QueryFirstOrDefaultAsync<WeatherForecast>(command);
     }
 }
@@ -132,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `weathers`
 ### 4. 配置WeatherApi项目
 >* nuget引用Aspire.MySqlConnector
 >* 用AddMySqlDataSource注册mysql数据库非常简便
->* 这么简单就完成了一个依赖mysql的云原生应用的开始
+>* 这么简单就完成了一个依赖mysql的云原生应用
 
 ~~~csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -154,10 +159,10 @@ app.Run();
 >* F5运行,直接打开Aspire的dashboard
 >* 包含1个mysql及数据库myWeather
 >* WeatherApi启动了2个进程
->* 控制台是用来查看日志的
->* 结构化也是用来查看格式化后的日志
->* 跟踪是APM的链路跟踪
->* 指标是查看应用性能的
+>* 《控制台》是用来查看日志的
+>* 《结构化》也是用来查看格式化后的日志
+>* 《跟踪》是APM的链路跟踪
+>* 《指标》是查看应用性能的
 >* Aspire开发云原生应用虽然简单,功能却特别全
 
 ![dashboard](./attachments/dashboard1.png)
@@ -279,7 +284,7 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
     /// </summary>
     private readonly IWeatherService _originalService = originalService;
     /// <summary>
-    /// 过期事件
+    /// 过期时间
     /// </summary>
     private readonly TimeSpan _expireTime = expireTime;
     /// <summary>
@@ -462,14 +467,20 @@ public class SafeWeatherController([FromKeyedServices("SafeWeather")] IWeatherSe
 ### 5. 压力测试
 >* 启动2个副本
 >* 500并发
+>* 通过率达到每秒2千多
 >* 没有错误
 >* 平均0.22秒
 >* 10%的请求0.28秒以上
 >* 5%的请求0.31秒以上
 >* 1%的请求0.45秒以上
->* 手搓线程池的效果是不是挺不错的
->* 不需要增加缓存也能扛得住高并发
-
+>* 手搓线程池是不是很神奇,把500并发限制为64个并发,发生了质的变化
+>* 原来的错误和超时都不见了,变得井然有序起来
+>* 这些高并发并不见得是数据库支撑不了
+>* 而是没有用正确的方式喂给它
+>* 一次喂太多把数据库给噎死了
+>* 手搓线程池可以作为一个智能的“喂食器”
+>* 如果数据量更大都超出了设计，即使忽略部分请求也不能打挂后端数据库是吧
+>* 大家觉得手搓线程池这个效果惊不惊喜、意不意外！！！
 
 |Label|Samples|Average|Median|90% Line|95% Line|99% Line|Min|Max|Error %|Throughput|Received KB/sec|Sent KB/sec|
 |:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|

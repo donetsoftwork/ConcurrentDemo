@@ -1,6 +1,10 @@
 using Hand.Collections;
 using Hand.Job;
 using Hand.States;
+using Microsoft.Extensions.Logging;
+using MySqlConnector;
+using System.Data;
+using System.Data.Common;
 using Weather.Models;
 using Weather.Services;
 
@@ -10,7 +14,10 @@ namespace Concurrent;
 /// 天气处理器
 /// </summary>
 /// <param name="queue"></param>
-public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherService originalService, TimeSpan expireTime)
+/// <param name="dataSource"></param>
+/// <param name="originalService"></param>
+/// <param name="expireTime"></param>
+public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, DbDataSource dataSource, IWeatherService originalService, TimeSpan expireTime, ILogger<WeatherProcessor> logger)
     : IQueueProcessor<WeatherWarpper>
     , IWeatherService
 {
@@ -19,14 +26,21 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
     /// 队列
     /// </summary>
     private readonly IQueue<WeatherWarpper> _queue = queue;
+    private readonly DbDataSource _dataSource = dataSource;
+
     /// <summary>
     /// 原始服务
     /// </summary>
     private readonly IWeatherService _originalService = originalService;
     /// <summary>
-    /// 过期事件
+    /// 过期时间
     /// </summary>
     private readonly TimeSpan _expireTime = expireTime;
+    /// <summary>
+    /// 日志
+    /// </summary>
+    private readonly ILogger<WeatherProcessor> _logger = logger;
+
     /// <summary>
     /// 队列
     /// </summary>
@@ -37,15 +51,12 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
     /// <inheritdoc />
     public Task<WeatherForecast?> GetWeather(int year, int month, int day, CancellationToken token)
     {
-        var result = new WeatherWarpper(year, month, day, DateTime.Now.Add(_expireTime), token);
         if (token.IsCancellationRequested)
-        {
-            Cancel(result);     
-        }
-        else
-        {
-            _queue.Enqueue(result);
-        }
+            return Task.FromCanceled<WeatherForecast?>(token);
+
+        var date = new DateTime(year, month, day);
+        var result = new WeatherWarpper(date, DateTime.Now.Add(_expireTime), token);
+        _queue.Enqueue(result);
         return result.Task;
     }
     /// <inheritdoc />
@@ -56,13 +67,24 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
     /// <inheritdoc />
     async void IQueueProcessor<WeatherWarpper>.Run(IQueue<WeatherWarpper> queue, ThreadJobService<WeatherWarpper> service, CancellationToken token)
     {
+        //using var connection = new MySqlConnection(_dataSource.ConnectionString);
+        //await connection.OpenAsync(CancellationToken.None)
+        //    .ConfigureAwait(false);
+        //using var connection = await _dataSource.OpenConnectionAsync(CancellationToken.None);
         while (queue.TryDequeue(out var item))
         {
             if (service.Activate(item))
             {
+                //bool wasClosed = connection.State == ConnectionState.Closed;
                 try
                 {
-                    await item.GetWeather(_originalService, token);
+                    //if(wasClosed)
+                    //{
+                    //    await connection.OpenAsync(CancellationToken.None)
+                    //        .ConfigureAwait(false);
+                    //}
+                    using var connection = await _dataSource.OpenConnectionAsync(token);
+                    await item.GetWeather(connection, _originalService, token);
                 }
                 catch (Exception ex)
                 {
@@ -87,11 +109,12 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
     /// <param name="callBack"></param>
     /// <param name="ex"></param>
 
-    public static void Exception(IExceptionable callBack, Exception ex)
+    public void Exception(IExceptionable callBack, Exception ex)
     {
         try
         {
             callBack.OnException(ex);
+            _logger.LogError(ex, "An error occurred");
         }
         catch { }
     }
@@ -106,5 +129,10 @@ public sealed class WeatherProcessor(IQueue<WeatherWarpper> queue, IWeatherServi
             cancelable.OnCancel();
         }
         catch { }
+    }
+
+    public Task<WeatherForecast?> GetWeather(DbConnection connection, DateTime date, CancellationToken token = default)
+    {
+        return _originalService.GetWeather(connection, date, token);
     }
 }

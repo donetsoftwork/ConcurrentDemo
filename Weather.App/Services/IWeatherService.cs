@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Weather.Models;
 
 namespace Weather.Services;
@@ -11,6 +12,14 @@ public interface IWeatherService
     /// <param name="token"></param>
     /// <returns></returns>
     Task<WeatherForecast?> GetWeather(int year, int month, int day, CancellationToken token = default);
+    /// <summary>
+    /// 获取天气
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="date"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    Task<WeatherForecast?> GetWeather(DbConnection connection, DateTime date, CancellationToken token = default);
     /// <summary>
     /// 生成天气数据
     /// </summary>

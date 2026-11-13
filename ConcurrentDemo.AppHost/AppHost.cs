@@ -12,7 +12,7 @@ var db = mysql.AddDatabase(dbName)
 //builder.AddProject<Projects.WeatherApi>("weatherapi")
 //    .WithReference(db)
 //    .WaitFor(db)
-//    .WithReplicas(10);
+//    .WithReplicas(2);
 
 builder.AddProject<Projects.ConcurrentApi>("concurrentapi")
     .WithReference(db)

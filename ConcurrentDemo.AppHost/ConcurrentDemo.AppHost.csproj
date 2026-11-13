@@ -8,11 +8,12 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<UserSecretsId>a5994059-c2dc-4905-82be-64b4b18d701c</UserSecretsId>
+		<AspireUseCliBundle>true</AspireUseCliBundle>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" />
-		<PackageReference Include="Aspire.Hosting.MySql" Version="13.0.0" />
+		<PackageReference Include="Aspire.Hosting.AppHost" Version="13.6.5" />
+		<PackageReference Include="Aspire.Hosting.MySql" Version="13.6.5" />
 	</ItemGroup>
 
 	<ItemGroup>

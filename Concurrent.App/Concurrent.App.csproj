@@ -8,8 +8,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.66" />
-		<PackageReference Include="Hand.Tasks" Version="0.2.0-alpha" />
+		<PackageReference Include="Dapper" Version="2.1.89" />
+		<PackageReference Include="Hand.Tasks" Version="0.3.2.1-alpha" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />
+		<PackageReference Include="MySqlConnector" Version="3.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

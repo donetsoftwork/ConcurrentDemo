@@ -6,8 +6,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.66" />
-		<PackageReference Include="Aspire.MySqlConnector" Version="13.0.0" />
+		<PackageReference Include="Dapper" Version="2.1.89" />
+		<PackageReference Include="Aspire.MySqlConnector" Version="13.6.5" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\ConcurrentDemo.ServiceDefaults\ConcurrentDemo.ServiceDefaults.csproj" />

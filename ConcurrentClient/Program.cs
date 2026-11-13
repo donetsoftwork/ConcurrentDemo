@@ -42,7 +42,7 @@ class HelloAsyncStateMachine(string name,int time, CancellationToken token) : IA
             _awaiter = default;
             num = _state = -1;
             awaiter.GetResult();
-            Console.WriteLine($"Thread{Environment.CurrentManagedThreadId} HelloAsync {name},{DateTime.Now:HH:mm:ss.fff}");
+            Console.WriteLine($"Thread{Environment.CurrentManagedThreadId} HelloAsync {_name},{DateTime.Now:HH:mm:ss.fff}");
         }
         catch (Exception ex)
         {
