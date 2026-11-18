@@ -2,8 +2,6 @@ using Hand.Collections;
 using Hand.Job;
 using Hand.States;
 using Microsoft.Extensions.Logging;
-using MySqlConnector;
-using System.Data;
 using System.Data.Common;
 using Weather.Models;
 using Weather.Services;

@@ -9,12 +9,12 @@ var initScriptPath = Path.Join(Path.GetDirectoryName(typeof(Program).Assembly.Lo
 var db = mysql.AddDatabase(dbName)
     .WithCreationScript(File.ReadAllText(initScriptPath));
 
-//builder.AddProject<Projects.WeatherApi>("weatherapi")
+//builder.AddDotnetProject("weatherapi", "../WeatherApi")
 //    .WithReference(db)
 //    .WaitFor(db)
 //    .WithReplicas(2);
 
-builder.AddProject<Projects.ConcurrentApi>("concurrentapi")
+builder.AddDotnetProject("concurrentapi", "../ConcurrentApi")
     .WithReference(db)
     .WaitFor(db)
     .WithReplicas(2);

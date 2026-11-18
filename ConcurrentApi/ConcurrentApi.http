@@ -3,6 +3,11 @@
 GET {{ConcurrentApi_HostAddress}}/WeatherForecast/2025/11/11
 Accept: application/json
 
+### httprepl http://localhost:5114
+
+PUT {{ConcurrentApi_HostAddress}}/WeatherForecast/2025/11/11
+Accept: application/json
+
 ###
 
 GET {{ConcurrentApi_HostAddress}}/SafeWeather/2025/11/11
